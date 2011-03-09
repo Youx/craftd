@@ -299,7 +299,11 @@ cdbase_PlayerProcess (CDServer* server, CDPlayer* player, CDPacket* packet)
             if (!spawnPosition) {
                 SERR(server, "unknown spawn position, can't finish login procedure");
 
-                return false;
+                spawnPosition = calloc(1, sizeof(MCPosition));
+                spawnPosition->x = 0;
+                spawnPosition->y = 127;
+                spawnPosition->z = 0;
+                //return false;
             }
 
             // Hack in a square send for login
