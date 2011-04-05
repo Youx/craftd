@@ -14,6 +14,7 @@
    you enhance it, please drop me an email at steve@worley.com. */
 
 #include <math.h>
+#include <stdint.h>
 //#include <stdio.h>
 #include "cellular.h"  /* Function prototype */
 
@@ -181,7 +182,7 @@ static void AddSamples(long xi, long yi, long zi, long max_order,
 {
   double dx, dy, dz, fx, fy, fz, d2;
   long count, i, j, index;
-  unsigned long seed, this_id;
+  uint32_t seed, this_id;
   
   /* Each cube has a random number seed based on the cube's ID number.
      The seed might be better if it were a nonlinear hash like Perlin uses
