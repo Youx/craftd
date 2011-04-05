@@ -70,6 +70,7 @@ cdclassic_GenerateChunk (CDServer* server, CDWorld* world, int x, int z, MCChunk
     cdclassic_AddSediments(data, x, z);
     cdclassic_FloodWithWater(data, x, z, 64);
     cdclassic_BedrockGround(data, x, z);
+    cdclassic_AddTreeRoots (data, x, z);
     cdclassic_GenerateSkyLight(data, x, z);
 
     return true;

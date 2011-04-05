@@ -22,9 +22,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 #include <math.h>
 #include <noise/simplexnoise1234.h>
+#include <noise/cellular.h>
 
 static
 float
@@ -314,5 +314,60 @@ cdclassic_AddMinerals (MCChunk* chunk, int chunkX, int chunkZ)
                 }
             }
         }
+    }
+}
+
+static
+void
+cdclassic_AddTreeRoots (MCChunk* chunk, int chunkX, int chunkZ)
+{
+    for (int x = 0; x < 16; x++) {
+
+        for (int z = 0; z < 16; z++) {
+            int y = chunk->heightMap[x+(z *16)];
+            if (y < 66 || y > 97)
+                continue;
+            /* sin(x+z) means we get "patches" of trees
+             * sin(y-62.0)/35.0 makes a distribution that's between 67 & 97,
+             * with higher values in the middle */
+            double coeff = 0.30 * (sin(((chunkX*16.0+x+chunkZ*16.0+z)/48.0*3.1415926535897)) + 1.0)/2.0 * sin((y - 65.0)/32.0*3.1415926535897);
+
+            float totalX = ((((float) chunkX) * 16.0) + ((float) x)) * coeff;
+            float totalZ = ((((float) chunkZ) * 16.0) + ((float) z)) * coeff;
+
+            double pos[3] = {totalX, totalZ, 0};
+            double distance[1] = {0.0};
+            double delta[1][3] = {{0,0,0}};
+            unsigned long id[1] = {0};
+            /* resulting tree position */
+            double tree_loc[3];
+            int tree_loc_x, tree_loc_z;
+            int tree_loc_ch_x, tree_loc_ch_z;
+
+            /* compute the closest cellular position */
+            Worley(pos, 1, distance, delta, id);
+
+            /* get the location of the nearest tree */
+            tree_loc[0] = (pos[0]-delta[0][0])/coeff;
+            tree_loc[1] = (pos[1]-delta[0][1])/coeff;
+            tree_loc_ch_x = tree_loc[0]/16;
+            tree_loc_ch_z = tree_loc[1]/16;
+            tree_loc_x = CD_Mod(tree_loc[0], 16);
+            tree_loc_z = CD_Mod(tree_loc[1], 16);
+
+            if (tree_loc_ch_x == chunkX && tree_loc_ch_z == chunkZ
+                    && tree_loc_x == x && tree_loc_z == z) {
+                /* This will probably need to be replaced
+                 * by a "grow" function, but the main goal
+                 * right now is to have a correct distribution
+                 * Also, we will need to grow trees that are
+                 * not at the current position (even outside the
+                 * current chunk), so that we can have correct
+                 * folliage */
+                chunk->blocks[y + (z * 128) + (x * 128 * 16)] = MCWood;
+                chunk->blocks[y+1 + (z * 128) + (x * 128 * 16)] = MCWood;
+                chunk->blocks[y+2 + (z * 128) + (x * 128 * 16)] = MCWood;
+            }
+	}
     }
 }

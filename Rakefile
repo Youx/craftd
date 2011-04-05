@@ -218,7 +218,7 @@ namespace :craftd do |craftd|
 
       namespace :classic do |classic|
         classic.libraries = '-lm'
-        classic.sources   = FileList['plugins/mapgen/classic/main.c', 'plugins/mapgen/noise/simplexnoise1234.c']
+        classic.sources   = FileList['plugins/mapgen/classic/main.c', 'plugins/mapgen/noise/simplexnoise1234.c', 'plugins/mapgen/noise/cellular.c']
 
         CLEAN.include classic.sources.ext('o')
         CLOBBER.include "plugins/#{plugin.file('mapgen.classic')}"
