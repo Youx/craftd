@@ -46,12 +46,12 @@ static int Poisson_count[256]=
    list of values. */
 static void AddSamples(long xi, long yi, long zi, long max_order,
 			double at[3], double *F,
-			double (*delta)[3], unsigned long *ID);
+			double (*delta)[3], uint32_t *ID);
 
 
 /* The main function! */
 void Worley(double at[3], long max_order,
-	    double *F, double (*delta)[3], unsigned long *ID)
+	    double *F, double (*delta)[3], uint32_t *ID)
 {
   double x2,y2,z2, mx2, my2, mz2;
   double new_at[3];
@@ -178,7 +178,7 @@ void Worley(double at[3], long max_order,
 
 static void AddSamples(long xi, long yi, long zi, long max_order,
 		       double at[3], double *F,
-		       double (*delta)[3], unsigned long *ID)
+		       double (*delta)[3], uint32_t *ID)
 {
   double dx, dy, dz, fx, fy, fz, d2;
   long count, i, j, index;

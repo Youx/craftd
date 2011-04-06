@@ -319,18 +319,182 @@ cdclassic_AddMinerals (MCChunk* chunk, int chunkX, int chunkZ)
 
 static
 void
+cdclassic_GrowTree (MCChunk* chunk, int x, int y, int z, uint32_t val)
+{
+	int i;
+	int baseHeight = (val & 0x00000003)+1; /* height before branches, 1-4 */
+	int branchHeight = (val & 0x0000000C) >> 2; /* height of branches, 0-3 */
+	uint32_t branches[3];
+	branches[0] = ((val & 0x0000FF00) >> 8);
+	branches[1] = ((val & 0x00FF0000) >> 16);
+	branches[2] = ((val & 0xFF000000) >> 24);
+	printf("branchHeight : %i\n", branchHeight);
+	printf("branches : %x %x %x\n", branches[0], branches[1], branches[2]);
+	for (i = 0; i < baseHeight; i++) {
+                chunk->blocks[(y+i) + (z * 128) + (x * 128 * 16)] = MCWood;
+	}
+	for (i = 0; i < branchHeight; i++) {
+                chunk->blocks[(y+baseHeight+i) + (z * 128) + (x * 128 * 16)] = MCWood;
+		if (z >= 1 && x >= 1) {
+			if (branches[i] & 1) {
+				chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + ((x-1) * 128 * 16)] = MCWood;
+
+				if (x >= 2)
+					chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + ((x-2) * 128 * 16)] = MCLeaves;
+				else
+					chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + ((x-1) * 128 * 16)] = MCLeaves;
+
+				if (z >= 2)
+					chunk->blocks[(y+baseHeight+i) + ((z-2) * 128) + ((x-1) * 128 * 16)] = MCLeaves;
+				else
+					chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + ((x-1) * 128 * 16)] = MCLeaves;
+			} else {
+				chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + ((x-1) * 128 * 16)] = MCLeaves;
+			}
+		}
+		if (z >= 1) {
+			if (branches[i] & 2) {
+				chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + (x * 128 * 16)] = MCWood;
+				if (z >= 2)
+					chunk->blocks[(y+baseHeight+i) + ((z-2) * 128) + (x * 128 * 16)] = MCLeaves;
+				else
+					chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + (x * 128 * 16)] = MCLeaves;
+			} else {
+				chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + (x * 128 * 16)] = MCLeaves;
+			}
+		}
+		if (z >= 1 && x < 15) {
+			if (branches[i] & 4) {
+				chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + ((x+1) * 128 * 16)] = MCWood;
+				if (x < 14)
+					chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + ((x+2) * 128 * 16)] = MCLeaves;
+				else
+					chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + ((x+1) * 128 * 16)] = MCLeaves;
+
+				if (z >= 2)
+					chunk->blocks[(y+baseHeight+i) + ((z-2) * 128) + ((x+1) * 128 * 16)] = MCLeaves;
+				else
+					chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + ((x+1) * 128 * 16)] = MCLeaves;
+			} else {
+				chunk->blocks[(y+baseHeight+i) + ((z-1) * 128) + ((x+1) * 128 * 16)] = MCLeaves;
+			}
+		}
+		if (x >= 1) {
+			if (branches[i] & 8) {
+				chunk->blocks[(y+baseHeight+i) + (z * 128) + ((x-1) * 128 * 16)] = MCWood;
+				if (x >= 2)
+					chunk->blocks[(y+baseHeight+i) + (z * 128) + ((x-2) * 128 * 16)] = MCLeaves;
+				else
+					chunk->blocks[(y+baseHeight+i) + (z * 128) + ((x-1) * 128 * 16)] = MCLeaves;
+			} else {
+				chunk->blocks[(y+baseHeight+i) + (z * 128) + ((x-1) * 128 * 16)] = MCLeaves;
+			}
+		}
+		if (x < 15) {
+			if (branches[i] & 16) {
+				chunk->blocks[(y+baseHeight+i) + (z * 128) + ((x+1) * 128 * 16)] = MCWood;
+				if (x < 14)
+					chunk->blocks[(y+baseHeight+i) + (z * 128) + ((x+2) * 128 * 16)] = MCLeaves;
+				else
+					chunk->blocks[(y+baseHeight+i) + (z * 128) + ((x+1) * 128 * 16)] = MCLeaves;
+			} else {
+				chunk->blocks[(y+baseHeight+i) + (z * 128) + ((x+1) * 128 * 16)] = MCLeaves;
+			}
+		}
+		if (z < 15 && x >= 1) {
+			if (branches[i] & 32) {
+				chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + ((x-1) * 128 * 16)] = MCWood;
+				if (z < 14)
+					chunk->blocks[(y+baseHeight+i) + ((z+2) * 128) + ((x-1) * 128 * 16)] = MCLeaves;
+				else 
+					chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + ((x-1) * 128 * 16)] = MCLeaves;
+
+				if (x >= 2)
+					chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + ((x-2) * 128 * 16)] = MCLeaves;
+				else
+					chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + ((x-1) * 128 * 16)] = MCLeaves;
+			} else {
+				chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + ((x-1) * 128 * 16)] = MCLeaves;
+			}
+		}
+		if (z < 15) {
+			if (branches[i] & 64) {
+			chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + (x * 128 * 16)] = MCWood;
+			if (z < 14)
+				chunk->blocks[(y+baseHeight+i) + ((z+2) * 128) + (x * 128 * 16)] = MCLeaves;
+			else
+				chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + (x * 128 * 16)] = MCLeaves;
+			} else {
+			chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + (x * 128 * 16)] = MCLeaves;
+			}
+				
+		}
+		if (z < 15 && x < 15) {
+			if (branches[i] & 64) {
+			chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + ((x+1) * 128 * 16)] = MCWood;
+			if (z < 14)
+				chunk->blocks[(y+baseHeight+i) + ((z+2) * 128) + ((x+1) * 128 * 16)] = MCLeaves;
+			else
+				chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + ((x+1) * 128 * 16)] = MCLeaves;
+
+			if (x < 14)
+				chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + ((x+2) * 128 * 16)] = MCLeaves;
+			else
+				chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + ((x+1) * 128 * 16)] = MCLeaves;
+			} else {
+			chunk->blocks[(y+baseHeight+i) + ((z+1) * 128) + ((x+1) * 128 * 16)] = MCLeaves;
+			}
+		}
+	}
+	if (x < 15) {
+		chunk->blocks[(y+baseHeight+branchHeight) + (z*128) + ((x+1)*128*16)] = MCLeaves;
+		chunk->blocks[(y+baseHeight-1) + (z*128) + ((x+1)*128*16)] = MCLeaves;
+	}
+	if (z < 15) {
+		chunk->blocks[(y+baseHeight+branchHeight) + ((z+1)*128) + (x*128*16)] = MCLeaves;
+		chunk->blocks[(y+baseHeight-1) + ((z+1)*128) + (x*128*16)] = MCLeaves;
+	}
+	if (x >= 1) {
+		chunk->blocks[(y+baseHeight+branchHeight) + (z*128) + ((x-1)*128*16)] = MCLeaves;
+		chunk->blocks[(y+baseHeight-1) + (z*128) + ((x-1)*128*16)] = MCLeaves;
+	}
+	if (z >= 1) {
+		chunk->blocks[(y+baseHeight+branchHeight) + ((z-1)*128) + (x*128*16)] = MCLeaves;
+		chunk->blocks[(y+baseHeight-1) + ((z-1)*128) + (x*128*16)] = MCLeaves;
+	}
+	if (x < 15 && z < 15) {
+		chunk->blocks[(y+baseHeight+branchHeight) + ((z+1)*128) + ((x+1)*128*16)] = MCLeaves;
+		chunk->blocks[(y+baseHeight-1) + ((z+1)*128) + ((x+1)*128*16)] = MCLeaves;
+	}
+	if (x >= 1 && z >= 1) {
+		chunk->blocks[(y+baseHeight+branchHeight) + ((z-1)*128) + ((x-1)*128*16)] = MCLeaves;
+		chunk->blocks[(y+baseHeight-1) + ((z-1)*128) + ((x-1)*128*16)] = MCLeaves;
+	}
+	if (x < 15 && z >= 1) {
+		chunk->blocks[(y+baseHeight+branchHeight) + ((z-1)*128) + ((x+1)*128*16)] = MCLeaves;
+		chunk->blocks[(y+baseHeight-1) + ((z-1)*128) + ((x+1)*128*16)] = MCLeaves;
+	}
+	if (x >= 1 && z < 15) {
+		chunk->blocks[(y+baseHeight+branchHeight) + ((z+1)*128) + ((x-1)*128*16)] = MCLeaves;
+		chunk->blocks[(y+baseHeight-1) + ((z+1)*128) + ((x-1)*128*16)] = MCLeaves;
+	}
+	chunk->blocks[(y+baseHeight+branchHeight+1) + (z*128) + (x*128*16)] = MCLeaves;
+}
+
+static
+void
 cdclassic_AddTreeRoots (MCChunk* chunk, int chunkX, int chunkZ)
 {
-    for (int x = 0; x < 16; x++) {
+    for (int x = 1; x < 15; x++) {
 
-        for (int z = 0; z < 16; z++) {
+        for (int z = 1; z < 15; z++) {
             int y = chunk->heightMap[x+(z *16)];
             if (y < 66 || y > 97)
                 continue;
             /* sin(x+z) means we get "patches" of trees
              * sin(y-62.0)/35.0 makes a distribution that's between 67 & 97,
              * with higher values in the middle */
-            double coeff = 0.30 * (sin(((chunkX*16.0+x+chunkZ*16.0+z)/48.0*3.1415926535897)) + 1.0)/2.0 * sin((y - 65.0)/32.0*3.1415926535897);
+            double coeff = 0.33 * (sin(((chunkX*16.0+x+chunkZ*16.0+z)/48.0*3.1415926535897)) + 1.0)/2.0 * sin((y - 65.0)/32.0*3.1415926535897);
 
             float totalX = ((((float) chunkX) * 16.0) + ((float) x)) * coeff;
             float totalZ = ((((float) chunkZ) * 16.0) + ((float) z)) * coeff;
@@ -338,7 +502,7 @@ cdclassic_AddTreeRoots (MCChunk* chunk, int chunkX, int chunkZ)
             double pos[3] = {totalX, totalZ, 0};
             double distance[1] = {0.0};
             double delta[1][3] = {{0,0,0}};
-            unsigned long id[1] = {0};
+            uint32_t id[1] = {0};
             /* resulting tree position */
             double tree_loc[3];
             int tree_loc_x, tree_loc_z;
@@ -364,9 +528,11 @@ cdclassic_AddTreeRoots (MCChunk* chunk, int chunkX, int chunkZ)
                  * not at the current position (even outside the
                  * current chunk), so that we can have correct
                  * folliage */
-                chunk->blocks[y + (z * 128) + (x * 128 * 16)] = MCWood;
-                chunk->blocks[y+1 + (z * 128) + (x * 128 * 16)] = MCWood;
-                chunk->blocks[y+2 + (z * 128) + (x * 128 * 16)] = MCWood;
+		cdclassic_GrowTree (chunk, x, y, z, id[0]);
+		printf("Tree ID : 0x%x\n", id[0]);
+                //chunk->blocks[y + (z * 128) + (x * 128 * 16)] = MCWood;
+                //chunk->blocks[y+1 + (z * 128) + (x * 128 * 16)] = MCWood;
+                //chunk->blocks[y+2 + (z * 128) + (x * 128 * 16)] = MCWood;
             }
 	}
     }

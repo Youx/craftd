@@ -44,4 +44,4 @@
    computation. The book lists the details of this tuning.  */
 
 void Worley(double at[3], long max_order,
-	    double F[2], double delta[2][3], unsigned long ID[2]);
+	    double F[2], double delta[2][3], uint32_t ID[2]);
